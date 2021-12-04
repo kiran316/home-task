@@ -21,6 +21,7 @@ This Repo contains 3 folders:
 
 1 AWS linux server with NFS enabled : act as NFS server to store postgres data 
 
+![image](https://user-images.githubusercontent.com/52204268/144708099-80e6937a-48d0-4848-af2b-94cb5afb45dd.png)
 
  
  
