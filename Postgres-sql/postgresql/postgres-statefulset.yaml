@@ -139,8 +139,9 @@ spec:
     - metadata:
         name: data
       spec:
+        storageClassName: "manual"
         accessModes:
           - "ReadWriteOnce"
         resources:
           requests:
-            storage: "1Gi"
+            storage: "200Mi"
