@@ -37,7 +37,6 @@ To deploy the cluster we need :
 
 #### Usage
 
-```ShellSession
 # Install dependencies from ``requirements.txt``
 sudo pip3 install -r requirements.txt
 
@@ -62,9 +61,8 @@ ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root 
 Note: When Ansible is already installed via system packages on the control machine, other python packages installed via `sudo pip install -r requirements.txt` will go to a different directory tree (e.g. `/usr/local/lib/python2.7/dist-packages` on Ubuntu) from Ansible's (e.g. `/usr/lib/python2.7/dist-packages/ansible` still on Ubuntu).
 As a consequence, `ansible-playbook` command will fail with:
 
-```raw
+
 ERROR! no action detected in task. This often indicates a misspelled module name, or incorrect module path.
-```
 
 probably pointing on a task depending on a module present in requirements.txt (i.e. "unseal vault").
 
