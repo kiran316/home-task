@@ -1,0 +1,134 @@
+pipeline {
+    agent {
+        node {
+            label 'linux-node'
+			//name of the agent attached with Jenkins master
+        }
+	parameters {
+         string(description: 'List of recipients to send email report', name: 'recipients', defaultValue: 'xyz@gmail.com')
+         string(description: 'repo branch_name', name: 'branch_name', defaultValue: 'main')
+            }
+	environment {
+              TAG = "${env.BUILD_NUMBER}"
+			  }
+    }
+    stages {
+       stage('Code Checkout'){
+	    steps {
+		  checkout([$class: 'GitSCM', branches: [[name: '*/${branch_name}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'LocalBranch', localBranch: "**"]], gitTool: 'Default', submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'jenkadm-github-test', url: 'https://github.com/kiran316/nodeJS.git']]])
+		  }
+      post
+            {
+                success
+                {
+                    echo "GIT_Checkout - Successful"
+                    sh """ echo '<font color="green">Successful</font></td></tr>'  """
+                }
+                failure
+                {
+                    echo "GIT_Checkout - Failure"
+                    sh """ echo '<font color="red">Failed</font></td></tr>'  """
+                }
+            }
+		 }
+        stage('Docker image build') {
+            steps {
+			     echo 'Building docker image...'
+                
+				script {
+				sh ' docker build -t test . '
+				sh "docker tag test:latest nodejs:${env.BUILD_NUMBER}"
+                }
+			}
+		            post
+            {
+                success
+                {
+                    echo "Build image - Successful"
+                    sh """ echo '<font color="green">Successful</font></td></tr>' """
+                }
+                failure
+                {
+                    echo "Build image - Failure"
+                    sh """ echo '<font color="red">Failed</font></td></tr>'  """
+                }
+            }
+		}
+		
+		 stage('Push image')
+        {
+            steps
+            {
+                echo 'Pushing docker image to docker registry...'
+                script
+                {
+                    sh "echo '<tr><td>Push image</td><td>' >> ${report_file}"
+                        sh "docker push devopsxebia/node:${env.BUILD_NUMBER}"
+   
+                       }
+                }
+            
+            post
+            {
+                success
+                {
+                    echo "Push image - Successful"
+                    sh """ echo '<font color="green">Successful</font></td></tr>'  """
+                }
+                failure
+                {
+                    echo "Push image - Failure"
+                    sh """ echo '<font color="red">Failed</font></td></tr>'"""
+                }
+            }
+        }
+
+          stage('Deploy to Kubernetes Environment') {
+                            steps {
+                                sh "kubectl apply -f resources.yaml"
+                                sh "sleep 120"
+                                sh "kubectl get po"
+                            }
+                        
+		post
+            {
+                success
+                {
+                    echo "Deployment - Successful"
+                    sh """ echo '<font color="green">Successful</font></td></tr>'  """
+                }
+                failure
+                {
+                    echo "Deployment - Failure"
+                    sh """ echo '<font color="red">Failed</font></td></tr>'"""
+                }
+            }
+			}
+		
+                        
+       }
+	   
+	 post
+    {
+        always
+        {
+            script
+            {
+                if ( currentBuild.result == 'FAILURE' || currentBuild.result == 'Failure' || currentBuild.result == 'failed' || currentBuild.result == 'Still Failing')
+                {
+                    sh "echo '</table>    </body>    </html>' >> ${report_file}"
+                    echo 'FAILED BUILD'
+                    emailext attachLog: true, body: '${FILE,path="index.html"} ', recipientProviders: [[$class: 'RequesterRecipientProvider']], subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - FAILURE',  to: "${recipients}"
+                }
+                else
+                {
+                    sh "echo '</table>    </body>    </html>' >> ${report_file}"
+                    echo 'BUILD PASSED'
+                    emailext attachLog: true, body: '${FILE,path="index.html"} ', recipientProviders: [[$class: 'RequesterRecipientProvider']], subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - SUCCESSFULL',  to: "${recipients}"
+                }
+            }
+        }
+    }
+}
+  
+            

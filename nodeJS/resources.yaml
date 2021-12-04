@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: angular
+  labels:
+    app: nodejs
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nodejs
+  template:
+    metadata:
+      labels:
+        app: nodejs
+    spec:
+      containers:
+        - name: nodejs
+          image: devopsxebia/nodejs
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 3000
+          resources:
+            limits:
+               memory: 2048Mi
+            requests:
+               memory: 512Mi
+---------
+kind: Service
+apiVersion: v1
+metadata:
+  name: nodejs-service
+  labels:
+    app: nodejs-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 30000
+      protocol: TCP 
+      targetPort: 30000
+  selector:
+    app: nodejs-service
+    
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata: 
+  name: nodejs-service
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: test-nodejs.nb01.local
+    http:
+      paths:
+      - backend:
+          serviceName: nodejs-service
+          servicePort: 30000
+        path: /
+        pathType: ImplementationSpecific
