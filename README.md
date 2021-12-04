@@ -3,7 +3,7 @@ This Repo contains 3 folders:
   Cluster code -> Setting up Kubernetes cluster on AWS with 3 master, 5 worker node 
   
   Postgres-sql -> H.A postgres DB with Replication controller/Manager feature to take care of failover and High availibility
-  
+ 
   NodeJS -> NodeJS code snipper for PUT/GET request
   
   TOOLS INVOLVED 
@@ -21,8 +21,7 @@ This Repo contains 3 folders:
 
 1 AWS linux server with NFS enabled : act as NFS server to store postgres data 
 
-========================================================================================
- 
+
  
  
  
